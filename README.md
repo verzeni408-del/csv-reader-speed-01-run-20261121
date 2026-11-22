@@ -29,3 +29,18 @@ Measured on the competition's practice set (6 cases, ~10.2 MB of CSV):
 - `solve.js` — dependency-free ES module, `run(input)` returns csv-reader's answer.
 - `main.ts` — reads `/input/cases.json`, answers each case with `run`, writes `/output/answers.json`.
 - `package.json`, `LICENSE` (MIT).
+
+## Round 6 — transformer v2 (2026-11-22)
+
+`transform.js` + a new `main.ts` fuse the three passes into one: the raw
+`cases.json` bytes are read as latin1 and the CSV structure is parsed
+straight off the JSON-escaped text — no `JSON.parse`, no csv-reader object
+graph, no `JSON.stringify`. `solve.js` is unchanged and stays the fallback:
+anything the transformer does not recognise throws and the driver falls
+back to `JSON.parse` + `run()`.
+
+Verified: practice 6/6 byte-identical; fuzz 32 seeds × 6 cases = 192
+identical; 22 hand-built edge cases identical. Local Node 24 (median of 6
+interleaved runs): wall 563 ms / CPU 695 ms vs round 5's 802 ms / 1015 ms
+— ~1.4× faster. Expected server dev ~900,000 µs (round 5: 1,210,000 µs,
+rank 681); the ≤20,000 µs pay line is not reachable by honest parsing.
